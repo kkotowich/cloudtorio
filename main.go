@@ -21,11 +21,11 @@ func main() {
 	fmt.Println(config.toString())
 
 	for result != "exit" {
-		result = mainMenu()
+		result = mainMenu(config)
 	}
 }
 
-func mainMenu() string {
+func mainMenu(config Config) string {
 	prompt := promptui.Select{
 		Label: "Select",
 		Items: []string{"download", "upload", "edit config", "exit"},
@@ -40,7 +40,7 @@ func mainMenu() string {
 
 	switch result {
 	case "download":
-		download()
+		download(config)
 	case "upload":
 		upload()
 	case "edit config":
@@ -50,11 +50,10 @@ func mainMenu() string {
 	return result
 }
 
-func download() error {
+func download(config Config) error {
 	fmt.Println("downloading file...")
 
-	//TODO: put path and file into config
-	resp, err := getRequest("/repos/kkotowich/cloudtorio-save/contents/README.md")
+	resp, err := getRequest("/repos/"+config.Username+"/"+config.Repo+"/contents/"+config.SaveGameName+".zip", config.APIKey)
 
 	if err != nil {
 		return err

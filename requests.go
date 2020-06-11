@@ -27,16 +27,16 @@ type RepoFileLinks struct {
 	HTML string `json:"html"`
 }
 
-func makeRequest(req *http.Request) (*http.Response, error) {
+func makeRequest(req *http.Request, apiKey string) (*http.Response, error) {
 
 	req.Header.Add("Accept", "application/vnd.github.v3+json")
-	req.Header.Add("Authorization", "token ab48a64d6bc93ebb5df6bd0edb86ce3fb9fe66a8")
+	req.Header.Add("Authorization", "token "+apiKey)
 
 	client := &http.Client{}
 	return client.Do(req)
 }
 
-func getRequest(path string) (*http.Response, error) {
+func getRequest(path string, apiKey string) (*http.Response, error) {
 
 	req, err := http.NewRequest("GET", baseURL+path, nil)
 
@@ -44,5 +44,5 @@ func getRequest(path string) (*http.Response, error) {
 		return nil, err
 	}
 
-	return makeRequest(req)
+	return makeRequest(req, apiKey)
 }

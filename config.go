@@ -5,18 +5,26 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // Config for user to connect to save game repository
 type Config struct {
-	APIKey       string `json:"apiKey"`
+	Username     string `json:"username"`
+	Repo         string `json:"repo"`
 	RepoURL      string `json:"repoUrl"`
+	APIKey       string `json:"apiKey"`
 	SaveGamePath string `json:"saveGamePath"`
 	SaveGameName string `json:"saveGameName"`
 }
 
 func (c Config) toString() string {
-	return "  apiKey: " + c.APIKey + "\n  repoUrl: " + c.RepoURL
+	return "  username: " + c.Username +
+		"\n  repo: " + c.Repo +
+		"\n  repoUrl: " + c.RepoURL +
+		"\n  apiKey: " + c.APIKey +
+		"\n  saveGamePath: " + c.SaveGamePath +
+		"\n  saveGameName: " + c.SaveGameName
 }
 
 func writeConfig(config Config) error {
@@ -30,7 +38,14 @@ func writeConfig(config Config) error {
 
 	defer configFile.Close()
 
-	data := "{\"apiKey\":\"" + config.APIKey + "\", \"repoUrl\": \"" + config.RepoURL + "\"}"
+	data := "{\n" +
+		"  \"username\":\"" + config.Username + "\",\n" +
+		"  \"repo\": \"" + config.Repo + "\",\n" +
+		"  \"repoUrl\": \"" + config.RepoURL + "\",\n" +
+		"  \"apiKey\": \"" + config.APIKey + "\",\n" +
+		"  \"saveGamePath\": \"" + config.SaveGamePath + "\",\n" +
+		"  \"saveGameName\": \"" + config.SaveGameName + "\"\n" +
+		"}"
 	_, err = configFile.WriteString(data)
 
 	if err != nil {
@@ -74,20 +89,49 @@ func readConfig() (Config, error) {
 
 func editConfig() error {
 	var (
-		repoURL string
-		apiKey  string
+		repo         string
+		username     string
+		repoURL      string
+		apiKey       string
+		saveGamePath string
+		saveGameName string
 	)
 
 	fmt.Println("")
 	fmt.Println("edit config")
 
-	fmt.Print("repository url: ")
-	fmt.Scanln(&repoURL)
-
 	fmt.Print("api key: ")
 	fmt.Scanln(&apiKey)
 
-	config := Config{APIKey: apiKey, RepoURL: repoURL}
+	fmt.Print("repository url (https://github.com/kkotowich/cloudtorio-save): ")
+	fmt.Scanln(&repoURL)
+	if len(repoURL) == 0 {
+		repoURL = "https://github.com/kkotowich/cloudtorio-save"
+	}
+
+	//TODO: escape string into config
+	// fmt.Print("save game directory (%appdata\\Factorio\\saves): ")
+	// fmt.Scanln(&saveGamePath)
+	// if len(saveGamePath) == 0 {
+	// 	saveGamePath = "%appdata\\Factorio\\saves"
+	// }
+
+	fmt.Print("save game name (cloudtorio-save): ")
+	fmt.Scanln(&saveGameName)
+	if len(saveGameName) == 0 {
+		saveGameName = "cloudtorio-save"
+	}
+
+	username, repo = parseRepoURL(repoURL)
+
+	config := Config{
+		APIKey:       apiKey,
+		Repo:         repo,
+		Username:     username,
+		RepoURL:      repoURL,
+		SaveGamePath: saveGamePath,
+		SaveGameName: saveGameName,
+	}
 
 	err := writeConfig(config)
 
@@ -96,4 +140,9 @@ func editConfig() error {
 	}
 
 	return nil
+}
+
+func parseRepoURL(repoURL string) (username string, repo string) {
+	tokens := strings.Split(repoURL, "/")
+	return tokens[3], tokens[4]
 }
