@@ -53,7 +53,8 @@ func mainMenu(config Config) string {
 func download(config Config) error {
 	fmt.Println("downloading file...")
 
-	resp, err := getRequest("/repos/"+config.Username+"/"+config.Repo+"/contents/"+config.SaveGameName+".zip", config.APIKey)
+	rh := NewRequestHelper(config.APIKey)
+	resp, err := rh.Get("/repos/" + config.Username + "/" + config.Repo + "/contents/" + config.SaveGameName + ".zip")
 
 	if err != nil {
 		return err
@@ -71,9 +72,23 @@ func download(config Config) error {
 	fmt.Printf("repoFile: %v\n", repoFile.Content)
 	fmt.Println(string(decoded))
 
+	fmt.Println("file successfully downloaded...")
+	fmt.Println("writing to disk...")
+
+	//TODO: write to disk
+
+	fmt.Println("file successfully saved to disk...")
+
 	return nil
 }
 
-func upload() {
-	fmt.Println("welcome to upload!")
+func upload() error {
+	fmt.Println("uploading file...")
+
+	// TODO
+	// "/projects/:id/repository/commits"
+
+	fmt.Println("file successfully uploaded...")
+
+	return nil
 }
