@@ -23,10 +23,10 @@ type RepoDirectory struct {
 
 // FileCommit to upload a file to the repo
 type FileCommit struct {
-	Message   string    `json:"message"`
-	Committer Committer `json:"committer"`
-	Content   string    `json:"content"`
-	SHA       string    `json:"sha,omitempty"`
+	Message string `json:"message"`
+	// Committer Committer `json:"committer,omitempty"`
+	Content string `json:"content"`
+	SHA     string `json:"sha,omitempty"`
 }
 
 // Committer is the user that uploads a file to the repo

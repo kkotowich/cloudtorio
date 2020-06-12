@@ -65,8 +65,6 @@ func downloadFile(config Config) (RepoFile, error) {
 	// https://api.github.com/repos/YOUR_ACCOUNT/YOUR_REPO/git/blobs/THE_SHA
 	resp, err := rh.Get("/repos/" + config.RepoOwner + "/" + config.RepoName + "/contents")
 
-	fmt.Printf("resp: %v", resp)
-
 	if err != nil {
 		fmt.Println("error downloading file from repo")
 		return RepoFile{}, err
@@ -155,9 +153,9 @@ func upload(config Config) error {
 	}
 
 	if len(sha) == 0 {
-		fmt.Println("sha: not found")
+		fmt.Println("uploading new file...")
 	} else {
-		fmt.Printf("sha: %s\n", sha)
+		fmt.Println("uploading existing file...")
 	}
 
 	fc := composeFileCommit(config, encoded, sha)
@@ -167,15 +165,12 @@ func upload(config Config) error {
 	body, err := json.Marshal(fc)
 
 	rh := NewRequestHelper(config.APIKey)
-	resp, err := rh.Put("/repos/"+config.RepoOwner+"/"+config.RepoName+"/contents/"+config.SaveGameName+".zip", bytes.NewBuffer(body))
+	_, err = rh.Put("/repos/"+config.RepoOwner+"/"+config.RepoName+"/contents/"+config.SaveGameName+".zip", bytes.NewBuffer(body))
 
 	if err != nil {
 		fmt.Println("error uploading file...")
 		return err
 	}
-
-	fmt.Println("/repos/" + config.RepoOwner + "/" + config.RepoName + "/contents/" + config.SaveGameName + ".zip")
-	fmt.Printf("response: %v\n", resp)
 
 	fmt.Println("file successfully uploaded...")
 
@@ -217,9 +212,9 @@ func encodeFileBase64(path string) (string, error) {
 }
 
 func composeFileCommit(config Config, encoded string, sha string) FileCommit {
-	var message string
+	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("enter commit message: ")
-	fmt.Scanln(&message)
+	message, _ := reader.ReadString('\n')
 
 	return FileCommit{
 		Message: message,
