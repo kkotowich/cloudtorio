@@ -59,11 +59,12 @@ func mainMenu(config Config) string {
 	return result
 }
 
-func downloadFile(config Config) (RepoFile, error) {
+func downloadFile(config Config, sha string) (RepoFile, error) {
 	rh := NewRequestHelper(config.APIKey)
 
-	// https://api.github.com/repos/YOUR_ACCOUNT/YOUR_REPO/git/blobs/THE_SHA
-	resp, err := rh.Get("/repos/" + config.RepoOwner + "/" + config.RepoName + "/contents")
+	resp, err := rh.Get("/repos/" + config.RepoOwner + "/" + config.RepoName + "/git/blobs/" + sha)
+
+	defer resp.Body.Close()
 
 	if err != nil {
 		fmt.Println("error downloading file from repo")
@@ -72,8 +73,6 @@ func downloadFile(config Config) (RepoFile, error) {
 
 	var repoFile RepoFile
 	json.NewDecoder(resp.Body).Decode(&repoFile)
-
-	resp.Body.Close()
 
 	return repoFile, nil
 }
@@ -110,24 +109,42 @@ func downloadToDisk(config Config) error {
 
 	repoFileMeta := findSaveGameRepoFile(repoDir, config.SaveGameName)
 
-	fmt.Printf("repoFile: %v", repoFileMeta)
+	repoFile, err := downloadFile(config, repoFileMeta.SHA)
 
-	// decoded, err := base64.StdEncoding.DecodeString(repoFile.Content)
+	if err != nil {
+		fmt.Println("error downloading blob")
+		return err
+	}
 
-	// if err != nil {
-	// 	fmt.Println("error decoding contents")
-	// 	return err
-	// }
+	decoded, err := base64.StdEncoding.DecodeString(repoFile.Content)
 
-	// fmt.Printf("repoFile: %v\n", repoFile.Content)
-	// fmt.Println(string(decoded))
+	if err != nil {
+		fmt.Println("error decoding contents")
+		return err
+	}
 
-	// fmt.Println("file successfully downloaded...")
-	// fmt.Println("writing to disk...")
+	fmt.Println("file successfully downloaded...")
+	fmt.Println("writing to disk...")
 
-	// //TODO: write to disk
+	file, err := os.Create(config.SaveGamePath + "\\" + config.SaveGameName + ".zip")
 
-	// fmt.Println("file successfully saved to disk...")
+	if err != nil {
+		fmt.Println("error creating file")
+		return err
+	}
+
+	defer file.Close()
+
+	if _, err := file.Write(decoded); err != nil {
+		fmt.Println("error writing contents to file")
+		return err
+	}
+	if err := file.Sync(); err != nil {
+		fmt.Println("error saving file")
+		return err
+	}
+
+	fmt.Println("file successfully saved to disk...")
 
 	return nil
 }

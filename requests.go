@@ -10,8 +10,8 @@ type RepoFile struct {
 	Type     string `json:"type"`
 	Encoding string `json:"encoding"`
 	Size     int    `json:"size"`
+	URL      string `json:"url"`
 	Name     string `json:"name"`
-	Path     string `json:"path"`
 	Content  string `json:"content"`
 	SHA      string `json:"sha"`
 }
