@@ -7,25 +7,32 @@ import (
 
 // RepoFile is a file from a github repo
 type RepoFile struct {
-	Type        string        `json:"type"`
-	Encoding    string        `json:"encoding"`
-	Size        int           `json:"size"`
-	Name        string        `json:"name"`
-	Path        string        `json:"path"`
-	Content     string        `json:"content"`
-	SHA         string        `json:"sha"`
-	URL         string        `json:"url"`
-	GitURL      string        `json:"git_url"`
-	HTMLURL     string        `json:"html_url"`
-	DownloadURL string        `json:"download_url"`
-	Links       RepoFileLinks `json:"_links"`
+	Type     string `json:"type"`
+	Encoding string `json:"encoding"`
+	Size     int    `json:"size"`
+	Name     string `json:"name"`
+	Path     string `json:"path"`
+	Content  string `json:"content"`
+	SHA      string `json:"sha"`
 }
 
-// RepoFileLinks is a collection of links for a repo file
-type RepoFileLinks struct {
-	Git  string `json:"git"`
-	Self string `json:"self"`
-	HTML string `json:"html"`
+// RepoDirectory is a slice of RepoFiles
+type RepoDirectory struct {
+	RepoFiles []RepoFile `json:""`
+}
+
+// FileCommit to upload a file to the repo
+type FileCommit struct {
+	Message   string    `json:"message"`
+	Committer Committer `json:"committer"`
+	Content   string    `json:"content"`
+	SHA       string    `json:"sha,omitempty"`
+}
+
+// Committer is the user that uploads a file to the repo
+type Committer struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // RequestHelper makes http requests to github api
@@ -48,6 +55,9 @@ func (rh RequestHelper) makeRequest(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Authorization", "token "+rh.APIKey)
 
 	client := &http.Client{}
+
+	//TODO: http error code handling
+
 	return client.Do(req)
 }
 
@@ -63,9 +73,9 @@ func (rh RequestHelper) Get(path string) (*http.Response, error) {
 	return rh.makeRequest(req)
 }
 
-// Post makes a POST request
-func (rh RequestHelper) Post(path string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest("POST", rh.BaseURL+path, body)
+// Put makes a PUT request
+func (rh RequestHelper) Put(path string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest("PUT", rh.BaseURL+path, body)
 
 	if err != nil {
 		return nil, err

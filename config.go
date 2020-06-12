@@ -10,8 +10,8 @@ import (
 
 // Config for user to connect to save game repository
 type Config struct {
-	Username     string `json:"username"`
-	Repo         string `json:"repo"`
+	RepoOwner    string `json:"repoOwner"`
+	RepoName     string `json:"repoName"`
 	RepoURL      string `json:"repoUrl"`
 	APIKey       string `json:"apiKey"`
 	SaveGamePath string `json:"saveGamePath"`
@@ -19,8 +19,8 @@ type Config struct {
 }
 
 func (c Config) toString() string {
-	return "  username: " + c.Username +
-		"\n  repo: " + c.Repo +
+	return "  repoOwner: " + c.RepoOwner +
+		"\n  repoName: " + c.RepoName +
 		"\n  repoUrl: " + c.RepoURL +
 		"\n  apiKey: " + c.APIKey +
 		"\n  saveGamePath: " + c.SaveGamePath +
@@ -39,8 +39,8 @@ func writeConfig(config Config) error {
 	defer configFile.Close()
 
 	data := "{\n" +
-		"  \"username\":\"" + config.Username + "\",\n" +
-		"  \"repo\": \"" + config.Repo + "\",\n" +
+		"  \"repoOwner\": \"" + config.RepoOwner + "\",\n" +
+		"  \"repoName\": \"" + config.RepoName + "\",\n" +
 		"  \"repoUrl\": \"" + config.RepoURL + "\",\n" +
 		"  \"apiKey\": \"" + config.APIKey + "\",\n" +
 		"  \"saveGamePath\": \"" + config.SaveGamePath + "\",\n" +
@@ -89,8 +89,8 @@ func readConfig() (Config, error) {
 
 func editConfig() error {
 	var (
-		repo         string
-		username     string
+		repoOwner    string
+		repoName     string
 		repoURL      string
 		apiKey       string
 		saveGamePath string
@@ -110,10 +110,10 @@ func editConfig() error {
 	}
 
 	//TODO: escape string into config
-	// fmt.Print("save game directory (%appdata\\Factorio\\saves): ")
+	// fmt.Print("save game directory (C:\\Users\\lobotomy\\AppData\\Roaming\\Factorio\\saves): ")
 	// fmt.Scanln(&saveGamePath)
 	// if len(saveGamePath) == 0 {
-	// 	saveGamePath = "%appdata\\Factorio\\saves"
+	// 	saveGamePath = "C:\\Users\\lobotomy\\AppData\\Roaming\\Factorio\\saves"
 	// }
 
 	fmt.Print("save game name (cloudtorio-save): ")
@@ -122,13 +122,13 @@ func editConfig() error {
 		saveGameName = "cloudtorio-save"
 	}
 
-	username, repo = parseRepoURL(repoURL)
+	repoOwner, repoName = parseRepoURL(repoURL)
 
 	config := Config{
 		APIKey:       apiKey,
-		Repo:         repo,
-		Username:     username,
 		RepoURL:      repoURL,
+		RepoName:     repoName,
+		RepoOwner:    repoOwner,
 		SaveGamePath: saveGamePath,
 		SaveGameName: saveGameName,
 	}
@@ -142,7 +142,7 @@ func editConfig() error {
 	return nil
 }
 
-func parseRepoURL(repoURL string) (username string, repo string) {
+func parseRepoURL(repoURL string) (repoOwner string, repoName string) {
 	tokens := strings.Split(repoURL, "/")
 	return tokens[3], tokens[4]
 }
